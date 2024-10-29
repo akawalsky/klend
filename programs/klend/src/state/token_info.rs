@@ -37,6 +37,9 @@ pub struct TokenInfo {
     pub switchboard_configuration: SwitchboardConfiguration,
 
     #[cfg_attr(feature = "serde", serde(default))]
+    pub stork_configuration: StorkConfiguration,
+
+    #[cfg_attr(feature = "serde", serde(default))]
     pub pyth_configuration: PythConfiguration,
 
     pub block_price_usage: u8,
@@ -239,6 +242,22 @@ impl SwitchboardConfiguration {
 
     pub fn has_twap(&self) -> bool {
         self.twap_aggregator != Pubkey::default() && self.twap_aggregator != NULL_PUBKEY
+    }
+}
+
+#[derive(BorshDeserialize, BorshSerialize, Debug, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(feature = "serde", serde(deny_unknown_fields))]
+#[zero_copy]
+#[repr(C)]
+pub struct StorkConfiguration {
+    #[cfg_attr(feature = "serde", serde(with = "serde_string", default))]
+    pub program: Pubkey,
+}
+
+impl StorkConfiguration {
+    pub fn is_enabled(&self) -> bool {
+        self.program != Pubkey::default() && self.program != NULL_PUBKEY
     }
 }
 

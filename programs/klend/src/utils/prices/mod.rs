@@ -1,6 +1,7 @@
 mod checks;
 mod pyth;
 mod scope;
+mod stork;
 mod switchboard;
 mod types;
 mod utils;
@@ -30,6 +31,8 @@ pub fn get_price(
     pyth_price_account_info: Option<&AccountInfo>,
     switchboard_price_feed_info: Option<&AccountInfo>,
     switchboard_price_twap_info: Option<&AccountInfo>,
+    stork_temporal_numeric_value_feed_info: Option<&AccountInfo>,
+    stork_temporal_numeric_value_twap_info: Option<&AccountInfo>,
     scope_prices_info: Option<&AccountInfo>,
     unix_timestamp: clock::UnixTimestamp,
 ) -> Result<Option<GetPriceResult>> {
@@ -38,6 +41,8 @@ pub fn get_price(
         pyth_price_account_info,
         switchboard_price_feed_info,
         switchboard_price_twap_info,
+        stork_temporal_numeric_value_feed_info,
+        stork_temporal_numeric_value_twap_info,
         scope_prices_info,
     )?;
 
@@ -49,6 +54,8 @@ fn get_most_recent_price_and_twap(
     pyth_price_account_info: Option<&AccountInfo>,
     switchboard_price_feed_info: Option<&AccountInfo>,
     switchboard_price_twap_info: Option<&AccountInfo>,
+    stork_temporal_numeric_value_feed_info: Option<&AccountInfo>,
+    stork_temporal_numeric_value_twap_info: Option<&AccountInfo>,
     scope_prices_info: Option<&AccountInfo>,
 ) -> Result<TimestampedPriceWithTwap> {
     let pyth_price = if token_info.pyth_configuration.is_enabled() {
@@ -70,6 +77,13 @@ fn get_most_recent_price_and_twap(
         None
     };
 
+    let stork_price = if token_info.stork_configuration.is_enabled() {
+        stork_temporal_numeric_value_feed_info
+            .and_then(|a| get_stork_price_and_twap(a, stork_temporal_numeric_value_twap_info).ok())
+    } else {
+        None
+    };
+
     let scope_price = if token_info.scope_configuration.is_enabled() {
         scope_prices_info
             .and_then(|a| get_scope_price_and_twap(a, &token_info.scope_configuration).ok())
@@ -77,7 +91,7 @@ fn get_most_recent_price_and_twap(
         None
     };
 
-    let most_recent_price = [pyth_price, switchboard_price, scope_price]
+    let most_recent_price = [pyth_price, switchboard_price, stork_price, scope_price]
         .into_iter()
         .flatten()
         .reduce(|current, candidate| {
