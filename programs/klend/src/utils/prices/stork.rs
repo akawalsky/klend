@@ -57,8 +57,8 @@ impl From<stork_sdk::temporal_numeric_value::TemporalNumericValue> for Timestamp
         let exp = 18u32;  // 10^18 decimal places
         let quantized_value = stork_price.quantized_value;
 
-        // Convert nanoseconds to milliseconds
-        let timestamp = stork_price.timestamp_ns / 1_000_000;
+        // Convert nanoseconds to seconds
+        let timestamp = stork_price.timestamp_ns / 1_000_000_000;
 
         let price_load = Box::new(move || {
             let price = Price { value: quantized_value, exp };
