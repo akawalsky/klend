@@ -12,7 +12,7 @@ pub(super) fn get_stork_price_and_twap(
     stork_price_info: &AccountInfo,
     stork_twap_info: &AccountInfo,
 ) -> Result<TimestampedPriceWithTwap> {
-    let price_feed: TemporalNumericValueFeed = stork_sdk::temporal_numeric_value::TemporalNumericValueFeed::try_deserialize(
+    let price_feed: TemporalNumericValueFeed = TemporalNumericValueFeed::try_deserialize(
         &mut &stork_price_info.data.borrow()[..]
     ).map_err(|e| {
         msg!("Error loading stork price feed: {:?}", e);
@@ -26,7 +26,7 @@ pub(super) fn get_stork_price_and_twap(
 
     validate_stork_price(price.quantized_value)?;
 
-    let twap: TemporalNumericValueFeed = stork_sdk::temporal_numeric_value::TemporalNumericValueFeed::try_deserialize(
+    let twap: TemporalNumericValueFeed = TemporalNumericValueFeed::try_deserialize(
         &mut &stork_twap_info.data.borrow()[..]
     )?;
 
@@ -52,8 +52,8 @@ pub(super) fn validate_stork_price(
     Ok(())
 }
 
-impl From<stork_sdk::temporal_numeric_value::TemporalNumericValue> for TimestampedPrice {
-    fn from(stork_price: stork_sdk::temporal_numeric_value::TemporalNumericValue) -> Self {
+impl From<TemporalNumericValue> for TimestampedPrice {
+    fn from(stork_price: TemporalNumericValue) -> Self {
         let exp = 18u32;  // 10^18 decimal places
         let quantized_value = stork_price.quantized_value;
 
