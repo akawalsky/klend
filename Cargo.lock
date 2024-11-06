@@ -2357,7 +2357,7 @@ name = "scope-types"
 version = "1.0.0"
 source = "git+https://github.com/Kamino-Finance/scope.git?branch=anchor_0.29_idl#0c8f7925aad9f5cf30b6715f2bef0ece9235d87a"
 dependencies = [
- "anchor-lang 0.30.1",
+ "anchor-lang 0.29.0",
  "bytemuck",
  "cfg-if",
  "num_enum 0.7.1",
