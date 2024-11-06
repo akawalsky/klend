@@ -37,14 +37,14 @@ pub const NULL_PUBKEY: solana_program::pubkey::Pubkey =
     ]);
 
 pub const LENDING_MARKET_SIZE: usize = 4656;
-pub const RESERVE_SIZE: usize = 8616;
+pub const RESERVE_SIZE: usize = 8680;
 pub const OBLIGATION_SIZE: usize = 3336;
-pub const RESERVE_CONFIG_SIZE: usize = 912;
+pub const RESERVE_CONFIG_SIZE: usize = 976;
 pub const REFERRER_TOKEN_STATE_SIZE: usize = 352;
 pub const USER_METADATA_SIZE: usize = 1024;
 pub const REFERRER_STATE_SIZE: usize = 64;
 pub const SHORT_URL_SIZE: usize = 68;
-pub const TOKEN_INFO_SIZE: usize = 384;
+pub const TOKEN_INFO_SIZE: usize = 448;
 
 pub const GLOBAL_UNHEALTHY_BORROW_VALUE: u64 = 50_000_000;
 
