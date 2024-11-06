@@ -13,12 +13,14 @@ use utils::constraints::emergency_mode_disabled;
 use crate::handlers::*;
 pub use crate::{state::*, utils::fraction};
 
+use std::str::FromStr;
+
 #[cfg(feature = "staging")]
 declare_id!("SLendK7ySfcEzyaFqy93gDnD3RtrpXJcnRwb6zFHJSh");
 
 #[cfg(not(feature = "staging"))]
-declare_id!("KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD");
-
+// declare_id!("KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD");
+declare_id!("HNx1sgQJo2eEf1HJ9dM3AawVeCmTduoVTBGVtmbATG6A");
 #[cfg(not(feature = "no-entrypoint"))]
 solana_security_txt::security_txt! {
     name: "Kamino Lending",
@@ -275,6 +277,52 @@ pub mod kamino_lending {
     ) -> Result<()> {
         unreachable!("This should never be called")
     }
+
+    pub fn get_prices_test(ctx: Context<GetPricesTest>) -> Result<()> {
+        let stork_btc_price_feed: Pubkey = Pubkey::from_str("7EEdqQTvGcgtSzhV2ZZH62LzKjuZRGqMdHRwZeionJyA").expect("Invalid STORK BTC Pubkey string");
+        let pyth_btc_price_feed: Pubkey = Pubkey::from_str("4cSM2e6rvbGQUFiJbqytoVMi5GgghSMr8LwVrT9VPSPo").expect("Invalid PYTH BTC Pubkey string");
+
+        let mut token_info = TokenInfo::default();
+        let stork_config = StorkConfiguration {
+            price_feed: stork_btc_price_feed,
+            twap_feed: Pubkey::default(),
+        };
+        // token_info.validate_token_info_config(
+        //     None,
+        //     None,
+        //     None,
+        //     Some(&ctx.accounts.stork_oracle),
+        //     None,
+        //     None,
+        // )?;
+        let pyth_config = PythConfiguration {
+            price: pyth_btc_price_feed
+        };
+
+        token_info.stork_configuration = stork_config;
+        token_info.pyth_configuration = pyth_config;
+        let price = kamino_lending::utils::prices::get_price(
+            &token_info,
+            Some(&ctx.accounts.pyth_oracle),
+            None,
+            None,
+            Some(&ctx.accounts.stork_oracle),
+            None,
+            None,
+            solana_program::clock::Clock::get()?.unix_timestamp,
+        );
+        let price_result: Option<u64> = price.ok().and_then(|p| p).map(|p| p.timestamp);
+        if price_result.is_some() {
+            msg!("Price timestamp: {:?}", price_result.unwrap());
+        }
+        Ok(())
+    }
+}
+
+#[derive(Accounts)]
+pub struct GetPricesTest<'info>{
+   pub pyth_oracle: AccountInfo<'info>,
+   pub stork_oracle: AccountInfo<'info> 
 }
 
 #[error_code]
@@ -392,6 +440,8 @@ pub enum LendingError {
     InvalidPythPriceAccount,
     #[msg("Switchboard account(s) do not match configuration")]
     InvalidSwitchboardAccount,
+    #[msg("Stork price account does not match configuration")]
+    InvalidStorkPriceAccount,
     #[msg("Scope price account does not match configuration")]
     InvalidScopePriceAccount,
     #[msg("The obligation has one collateral with an LTV set to 0. Withdraw it before withdrawing other collaterals")]
