@@ -1,7 +1,7 @@
 use std::convert::TryFrom;
 
 use anchor_lang::prelude::*;
-use stork_sdk::temporal_numeric_value::TemporalNumericValueFeed;
+use stork_sdk::temporal_numeric_value::{TemporalNumericValueFeed, TemporalNumericValue};
 use super::{
     types::{Price, TimestampedPriceWithTwap},
     utils, TimestampedPrice,
@@ -10,41 +10,37 @@ use crate::LendingError;
 
 pub(super) fn get_stork_price_and_twap(
     stork_price_info: &AccountInfo,
-    stork_twap_info: &AccountInfo,
+    stork_twap_info: Option<&AccountInfo>,
 ) -> Result<TimestampedPriceWithTwap> {
-    let price_feed: TemporalNumericValueFeed = TemporalNumericValueFeed::try_deserialize(
-        &mut &stork_price_info.data.borrow()[..]
-    ).map_err(|e| {
+    let price_feed = TemporalNumericValueFeed::try_from(stork_price_info).map_err(|e| {
         msg!("Error loading stork price feed: {:?}", e);
         error!(LendingError::PriceNotValid)
     })?;
-
     let feed_id = price_feed.id;
     let price = price_feed
         .get_latest_canonical_temporal_numeric_value_unchecked(&feed_id)
-        .ok()?;
-
+        .map_err(|e| {
+            msg!("Error getting stork price: {:?}", e);
+            error!(LendingError::PriceNotValid)
+        })?;
     validate_stork_price(price.quantized_value)?;
 
-    let twap: TemporalNumericValueFeed = TemporalNumericValueFeed::try_deserialize(
-        &mut &stork_twap_info.data.borrow()[..]
-    )?;
+    let twap_tsp: Option<TimestampedPrice> = stork_twap_info.and_then(|twap_info| TemporalNumericValueFeed::try_from_slice(&mut &twap_info.data.borrow()[..])
+                .ok())
+                .and_then(|feed| feed.get_latest_canonical_temporal_numeric_value_unchecked(&feed_id).ok())
+                .filter(|t| validate_stork_price(t.quantized_value).is_ok())
+                .map(|t| t.into());
 
-    validate_stork_price(twap.quantized_value)?;
-
-    let twap = twap
-        .get_latest_canonical_temporal_numeric_value_unchecked(&feed_id)
-        .ok()?;
     Ok(TimestampedPriceWithTwap {
         price: price.into(),
-        twap: Some(twap.into()),
+        twap: twap_tsp,
     })
 }
 
 pub(super) fn validate_stork_price(
     price_value: i128,
 ) -> Result<()> {
-    let abs_value = price_value.unsigned_abs();
+    let abs_value = price_value.unsigned_abs() / 10u128.pow(18);
     let price = u64::try_from(abs_value).unwrap_or(0);
     if price == 0 {
         return err!(LendingError::PriceIsZero);
