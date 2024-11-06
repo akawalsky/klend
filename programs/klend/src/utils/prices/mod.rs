@@ -12,6 +12,7 @@ use types::{Price, TimestampedPrice};
 use self::{
     checks::get_validated_price, pyth::get_pyth_price_and_twap, scope::get_scope_price_and_twap,
     switchboard::get_switchboard_price_and_twap, types::TimestampedPriceWithTwap,
+    stork::get_stork_price_and_twap,
 };
 use crate::{utils::Fraction, LendingError, PriceStatusFlags, TokenInfo};
 
@@ -77,9 +78,15 @@ fn get_most_recent_price_and_twap(
         None
     };
 
+    let stork_twap_info_opt = if token_info.is_twap_enabled() {
+        stork_temporal_numeric_value_twap_info
+    } else {
+        None
+    };
+
     let stork_price = if token_info.stork_configuration.is_enabled() {
         stork_temporal_numeric_value_feed_info
-            .and_then(|a| get_stork_price_and_twap(a, stork_temporal_numeric_value_twap_info).ok())
+            .and_then(|a| get_stork_price_and_twap(a, stork_twap_info_opt).ok())
     } else {
         None
     };
