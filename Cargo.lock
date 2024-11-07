@@ -702,7 +702,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4114279215a005bc675e386011e594e1d9b800918cea18fcadadcce864a2046b"
 dependencies = [
  "borsh-derive 0.10.3",
- "hashbrown 0.13.2",
+ "hashbrown 0.12.3",
 ]
 
 [[package]]
@@ -3044,12 +3044,11 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
 name = "stork-sdk"
-version = "0.0.2"
+version = "0.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c4d2b8847fe3545eecbac5d8c00b7d805a9e325fd10b2a4c2a55c0f05373b26"
+checksum = "3e8195870e6892969a61a131ed8fb5eca46303861e1357b66cf81f540c9e20c2"
 dependencies = [
  "anchor-lang 0.30.1",
- "solana-program",
 ]
 
 [[package]]
