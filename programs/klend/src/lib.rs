@@ -276,7 +276,6 @@ pub mod kamino_lending {
     }
 }
 
-#[derive(Accounts)]
 #[error_code]
 #[derive(PartialEq, Eq, strum::EnumString)]
 pub enum LendingError {
