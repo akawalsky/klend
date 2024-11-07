@@ -18,7 +18,6 @@ declare_id!("SLendK7ySfcEzyaFqy93gDnD3RtrpXJcnRwb6zFHJSh");
 
 #[cfg(not(feature = "staging"))]
 declare_id!("KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD");
-
 #[cfg(not(feature = "no-entrypoint"))]
 solana_security_txt::security_txt! {
     name: "Kamino Lending",
@@ -392,6 +391,8 @@ pub enum LendingError {
     InvalidPythPriceAccount,
     #[msg("Switchboard account(s) do not match configuration")]
     InvalidSwitchboardAccount,
+    #[msg("Stork price account does not match configuration")]
+    InvalidStorkPriceAccount,
     #[msg("Scope price account does not match configuration")]
     InvalidScopePriceAccount,
     #[msg("The obligation has one collateral with an LTV set to 0. Withdraw it before withdrawing other collaterals")]

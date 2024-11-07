@@ -59,4 +59,4 @@ serde = { workspace = true, optional = true }
 
 bitflags = "2.4.1"
 
-stork-sdk = "0.0.2"
+stork-sdk = "0.0.3"

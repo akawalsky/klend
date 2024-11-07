@@ -29,6 +29,8 @@ pub fn process(ctx: Context<RefreshReserve>) -> Result<()> {
             ctx.accounts.pyth_oracle.as_ref(),
             ctx.accounts.switchboard_price_oracle.as_ref(),
             ctx.accounts.switchboard_twap_oracle.as_ref(),
+            ctx.accounts.stork_oracle.as_ref(),
+            ctx.accounts.stork_twap_oracle.as_ref(),
             ctx.accounts.scope_prices.as_ref(),
         )?;
 
@@ -77,8 +79,8 @@ pub struct RefreshReserve<'info> {
     pub switchboard_price_oracle: Option<AccountInfo<'info>>,
     pub switchboard_twap_oracle: Option<AccountInfo<'info>>,
 
-    pub scope_prices: Option<AccountInfo<'info>>,
-
     pub stork_oracle: Option<AccountInfo<'info>>,
     pub stork_twap_oracle: Option<AccountInfo<'info>>,
+    
+    pub scope_prices: Option<AccountInfo<'info>>,
 }

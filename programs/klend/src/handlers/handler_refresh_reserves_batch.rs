@@ -62,6 +62,8 @@ pub fn process(ctx: Context<RefreshReservesBatch>, skip_price_updates: bool) -> 
             let pyth_oracle = maybe_price_account(remaining_accounts_it.next())?;
             let switchboard_price_oracle = maybe_price_account(remaining_accounts_it.next())?;
             let switchboard_twap_oracle = maybe_price_account(remaining_accounts_it.next())?;
+            let stork_price_oracle = maybe_price_account(remaining_accounts_it.next())?;
+            let stork_twap_oracle = maybe_price_account(remaining_accounts_it.next())?;
             let scope_prices = maybe_price_account(remaining_accounts_it.next())?;
 
             if lending_operations::is_price_refresh_needed(
@@ -73,6 +75,8 @@ pub fn process(ctx: Context<RefreshReservesBatch>, skip_price_updates: bool) -> 
                     pyth_oracle,
                     switchboard_price_oracle,
                     switchboard_twap_oracle,
+                    stork_price_oracle,
+                    stork_twap_oracle,
                     scope_prices,
                 )?;
 
@@ -81,6 +85,8 @@ pub fn process(ctx: Context<RefreshReservesBatch>, skip_price_updates: bool) -> 
                     pyth_oracle,
                     switchboard_price_oracle,
                     switchboard_twap_oracle,
+                    stork_price_oracle,
+                    stork_twap_oracle,
                     scope_prices,
                     clock.unix_timestamp,
                 )?

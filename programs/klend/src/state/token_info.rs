@@ -74,6 +74,8 @@ impl TokenInfo {
         pyth_info: Option<&AccountInfo>,
         switchboard_price_info: Option<&AccountInfo>,
         switchboard_twap_info: Option<&AccountInfo>,
+        stork_price_info: Option<&AccountInfo>,
+        stork_twap_info: Option<&AccountInfo>,
         scope_prices_info: Option<&AccountInfo>,
     ) -> Result<()> {
         require!(self.is_valid(), LendingError::InvalidOracleConfig);
@@ -87,6 +89,10 @@ impl TokenInfo {
             LendingError::InvalidSwitchboardAccount
         );
         require!(
+            self.check_stork_acc_matches(stork_price_info, stork_twap_info),
+            LendingError::InvalidStorkPriceAccount
+        );
+        require!(
             self.check_scope_acc_matches(scope_prices_info),
             LendingError::InvalidScopePriceAccount
         );
@@ -98,7 +104,8 @@ impl TokenInfo {
         self.scope_configuration.is_valid()
             && (self.scope_configuration.is_enabled()
                 || self.switchboard_configuration.is_enabled()
-                || self.pyth_configuration.is_enabled())
+                || self.pyth_configuration.is_enabled()
+                || self.stork_configuration.is_enabled())
     }
 
     #[inline]
@@ -122,6 +129,10 @@ impl TokenInfo {
 
         if self.switchboard_configuration.is_enabled() && !self.switchboard_configuration.has_twap()
         {
+            return false;
+        }
+
+        if self.stork_configuration.is_enabled() && !self.stork_configuration.has_twap() {
             return false;
         }
 
@@ -154,6 +165,24 @@ impl TokenInfo {
                     ))
         } else {
             switchboard_price_info.is_none() && switchboard_twap_info.is_none()
+        }
+    }
+
+    #[inline]
+    pub fn check_stork_acc_matches(
+        &self,
+        stork_price_info: Option<&AccountInfo>,
+        stork_twap_info: Option<&AccountInfo>,
+    ) -> bool {
+        if self.stork_configuration.is_enabled() {
+            matches!(stork_price_info, Some(a) if *a.key == self.stork_configuration.price_feed)
+                && (!self.is_twap_enabled()
+                    || matches!(
+                        stork_twap_info,
+                        Some(a) if *a.key == self.stork_configuration.twap_feed
+                    ))
+        } else {
+            stork_price_info.is_none() && stork_twap_info.is_none()
         }
     }
 
@@ -252,12 +281,17 @@ impl SwitchboardConfiguration {
 #[repr(C)]
 pub struct StorkConfiguration {
     #[cfg_attr(feature = "serde", serde(with = "serde_string", default))]
-    pub program: Pubkey,
+    pub price_feed: Pubkey,
+    #[cfg_attr(feature = "serde", serde(with = "serde_string", default))]
+    pub twap_feed: Pubkey,
 }
 
 impl StorkConfiguration {
     pub fn is_enabled(&self) -> bool {
-        self.program != Pubkey::default() && self.program != NULL_PUBKEY
+        self.price_feed != Pubkey::default() && self.price_feed != NULL_PUBKEY
+    }
+    pub fn has_twap(&self) -> bool {
+        self.twap_feed != Pubkey::default() && self.twap_feed != NULL_PUBKEY
     }
 }
 
